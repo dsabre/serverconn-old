@@ -103,9 +103,14 @@ if [ $found -eq 0 ]; then
 	exit 1
 fi
 
-# la scelta è valide e l'ultima linea era quella giusta
+# la scelta è valida e l'ultima linea era quella giusta
 if $(echo $line | grep --quiet '\[NOPASS\]'); then
 	ssh $(echo $line | sed -r 's/\[NOPASS\]//g')
+elif $(echo $line | grep --quiet '\[PASSGPG.*\]'); then
+	pass=$(echo "$line" | grep -o '\[.*\]\+' | sed -r 's/\[PASSGPG=//g' | sed -r 's/\]//g')
+	pass=$(pass $pass)
+	
+	sshpass -p "$pass" ssh -o StrictHostKeyChecking=no $(echo $line | sed -r 's/\[PASSGPG=.*\]//g')
 elif $(echo $line | grep --quiet '\[PASS.*\]'); then
 	pass=$(echo "$line" | grep -o '\[.*\]\+' | sed -r 's/\[PASS=//g' | sed -r 's/\]//g')
 	
@@ -115,3 +120,5 @@ else
 fi
 
 exit 0
+
+
