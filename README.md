@@ -49,7 +49,7 @@ To connect to a server:
 /your/path/serverconn/serverconn.sh [SERVER_ID]
 ```
 
-To open in edit the servers.txt file (vim is the default editor, but you can specify a different editor after the 'e'):
+To open in edit the servers.txt file (vi is the default editor, but you can specify a different editor after the 'e'):
 ```bash
 /your/path/serverconn/serverconn.sh e
 ```
