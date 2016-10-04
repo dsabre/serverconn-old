@@ -9,23 +9,23 @@ i=1
 confKey='e'
 bckKey='b'
 
-# se il numero server non è passato, presento la lista dei server configurati
+# if the server number is not there, show the list of configured servers
 if [ -z "$numServer" ]; then
 
 	clear
 
 	while read line; do
-		#salto le linee vuote
+		# skip empty rows
 		if [ -z "$line" ]; then
 			continue
 		fi
 		
 		if $(echo $line | grep --quiet '\[HEAD\]'); then
-			# linea di heading
+			# heading row
 			echo ""
 			echo " $line" | sed -r 's/\[HEAD\]//g'
 		else
-			# linea di comando
+			# command row
 			str=$(echo $line | sed -r 's/\[NOPASS\]//g' | sed -r 's/\[PASS.*\]//g')
 		
 			counter=$i
@@ -33,16 +33,16 @@ if [ -z "$numServer" ]; then
 				counter=" $counter"
 			fi
 			
-			echo -e "\t$counter - $str" # stampo la riga del comando
+			echo -e "\t$counter - $str"
 			
-			i=$[i + 1] # incremento il contatore
+			i=$[i + 1]
 		fi	
 	done < ${SERVERS}
 	
 	echo ""
-	echo " Configurazione"
-	echo -e "\t $confKey - per aggiungere/modificare/rimuovere i server (è possibile specificare un secondo parametro per indicare il programma di editor, default vi)"
-	echo -e "\t $bckKey - per effettuare il backup del file di configurazione"
+	echo " Configuration"
+	echo -e "\t $confKey - to add/edit/remove the servers (it's possible to specify a second parameter to set the editor program, default is vi)"
+	echo -e "\t $bckKey - to generate a backup of the configuration file"
 	echo ""
 	
 	exit 0
@@ -68,57 +68,59 @@ case $numServer in
 		
 		tar pczf $fileBck ${FILE_NAME}
 		
-		echo "Backup effettuato: ${FILE_PATH}/$fileBck"
+		echo "Backup created: ${FILE_PATH}/$fileBck"
 
 		exit 0
 	;;
 esac
 
-# se arrivo qui significa che ho un id server al quale connettermi
-# ottengo la riga relativa al server
+# server connection
 found=0
 while read line; do
-	#salto le linee vuote
+	# skip empty rows
 	if [ -z "$line" ]; then
 		continue
 	fi
 	
-	# salto le linee di heading
+	# skip heading rows
 	if $(echo $line | grep --quiet '\[HEAD\]'); then
 		continue
 	fi
 	
-	# quando trovo la linea corretta rompo il ciclo
+	# server found: break the cycle
 	if [ $i -eq $numServer ]; then
 		found=$i
 		break
 	fi
 	
-	i=$[i + 1] # incremento il contatore
+	i=$[i + 1]
 done < ${SERVERS}
 
-# controllo che la scelta sia valida
+# check if is a valid id
 if [ $found -eq 0 ]; then
-	echo "Scelta non valida"
+	echo "Invalid server id $numServer"
 	exit 1
 fi
 
-# la scelta è valida e l'ultima linea era quella giusta
+# valid id: use the last row of the cycle
 if $(echo $line | grep --quiet '\[NOPASS\]'); then
+	# no pass command
 	ssh $(echo $line | sed -r 's/\[NOPASS\]//g')
 elif $(echo $line | grep --quiet '\[PASSGPG.*\]'); then
+	# unix pass command
 	pass=$(echo "$line" | grep -o '\[.*\]\+' | sed -r 's/\[PASSGPG=//g' | sed -r 's/\]//g')
 	pass=$(pass $pass)
 	
 	sshpass -p "$pass" ssh -o StrictHostKeyChecking=no $(echo $line | sed -r 's/\[PASSGPG=.*\]//g')
 elif $(echo $line | grep --quiet '\[PASS.*\]'); then
+	# specified pass command
 	pass=$(echo "$line" | grep -o '\[.*\]\+' | sed -r 's/\[PASS=//g' | sed -r 's/\]//g')
 	
 	sshpass -p "$pass" ssh -o StrictHostKeyChecking=no $(echo $line | sed -r 's/\[PASS=.*\]//g')
 else
+	# sshpass command
 	sshpass -e ssh -o StrictHostKeyChecking=no $line
 fi
 
 exit 0
-
 
