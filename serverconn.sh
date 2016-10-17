@@ -105,7 +105,7 @@ fi
 # valid id: use the last row of the cycle
 if $(echo $line | grep --quiet '\[NOPASS\]'); then
 	# no pass command
-	ssh $(echo $line | sed -r 's/\[NOPASS\]//g')
+	ssh -o StrictHostKeyChecking=no $(echo $line | sed -r 's/\[NOPASS\]//g')
 elif $(echo $line | grep --quiet '\[PASSGPG.*\]'); then
 	# unix pass command
 	pass=$(echo "$line" | grep -o '\[.*\]\+' | sed -r 's/\[PASSGPG=//g' | sed -r 's/\]//g')
