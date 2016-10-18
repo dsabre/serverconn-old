@@ -88,3 +88,12 @@ Connect to the server numbered with the id 3:
 ```bash
 /your/path/serverconn/serverconn.sh 3
 ```
+# UploadConn
+
+This extension permit to upload a file to the server configured for ServerConn, the remote directory always will be /home/**username**.
+
+Example:
+```bash
+/your/path/serverconn/uploadconn.sh [SERVER_ID] [FILE_TO_UPLOAD]
+```
+
